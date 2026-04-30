@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Chatbot for YERSE — Demo by Shivam</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --ink: #1a1814;
+    --ink2: #3d3a34;
+    --sand: #f5f2ec;
+    --cream: #faf8f4;
+    --gold: #b89a6a;
+    --gold-light: #e8dcc8;
+    --border: rgba(26,24,20,0.12);
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(250,248,244,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 22px; font-weight: 400; letter-spacing: 0.04em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    font-size: 13px; color: var(--ink2); text-decoration: none;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 120px 48px 80px;
+    gap: 80px;
+  }
+  .hero-text { animation: fadeUp 0.8s ease both; }
+  .hero-tag {
+    display: inline-block;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); border: 0.5px solid var(--gold);
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 28px;
+  }
+  .hero-title {
+    font-family: var(--serif);
+    font-size: clamp(42px, 5vw, 68px);
+    font-weight: 300; line-height: 1.1;
+    margin-bottom: 24px;
+  }
+  .hero-title em { font-style: italic; color: var(--gold); }
+  .hero-sub {
+    font-size: 16px; color: var(--ink2); line-height: 1.7;
+    max-width: 440px; margin-bottom: 40px;
+  }
+  .btn-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--ink); color: var(--cream);
+    padding: 14px 28px; border: none; border-radius: 2px;
+    font-family: var(--sans); font-size: 13px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--ink2); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent; color: var(--ink);
+    padding: 13px 28px; border: 0.5px solid var(--ink);
+    border-radius: 2px; font-family: var(--sans);
+    font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.2s; display: inline-block;
+  }
+  .btn-outline:hover { background: var(--ink); color: var(--cream); }
+
+  /* ── PHONE MOCKUP ── */
+  .hero-visual {
+    display: flex; justify-content: center; align-items: center;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+  .phone-wrap {
+    position: relative;
+  }
+  .phone-device {
+    width: 300px;
+    background: #fff;
+    border-radius: 36px;
+    border: 8px solid var(--ink);
+    overflow: hidden;
+    box-shadow: 20px 20px 0 var(--gold-light);
+  }
+  .phone-notch {
+    background: var(--ink);
+    height: 32px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .phone-notch-pill {
+    width: 80px; height: 10px;
+    background: #333; border-radius: 10px;
+  }
+  .phone-screen {
+    background: #f9f8f6;
+    min-height: 480px;
+    display: flex; flex-direction: column;
+  }
+  .phone-chat-header {
+    background: #1a1814;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .phone-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--gold); display: flex; align-items: center;
+    justify-content: center; font-size: 11px; color: #fff; font-weight: 500;
+  }
+  .phone-chat-name { color: #f5f2ec; font-size: 13px; font-weight: 500; letter-spacing: 0.08em; }
+  .phone-chat-status { color: #9FE1CB; font-size: 10px; }
+  .phone-msgs {
+    flex: 1; padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 10px;
+    overflow-y: auto; max-height: 380px;
+  }
+  .p-msg-bot {
+    background: #fff; border: 0.5px solid #e0ddd7;
+    padding: 10px 12px; border-radius: 12px 12px 12px 3px;
+    font-size: 12px; line-height: 1.5; color: #1a1814;
+    max-width: 85%; align-self: flex-start;
+  }
+  .p-msg-user {
+    background: #1a1814; color: #f5f2ec;
+    padding: 10px 12px; border-radius: 12px 12px 3px 12px;
+    font-size: 12px; line-height: 1.5;
+    max-width: 85%; align-self: flex-end;
+  }
+  .p-link { color: var(--gold); font-size: 11px; text-decoration: underline; }
+  .phone-input-row {
+    padding: 10px;
+    border-top: 0.5px solid #e0ddd7;
+    display: flex; gap: 8px;
+    background: #fff;
+  }
+  .phone-inp {
+    flex: 1; border: 0.5px solid #d0cdc7; border-radius: 20px;
+    padding: 7px 12px; font-size: 12px;
+    font-family: var(--sans); outline: none;
+    background: #f5f2ec;
+  }
+  .phone-send-btn {
+    background: #1a1814; color: #f5f2ec;
+    border: none; border-radius: 20px;
+    padding: 7px 14px; font-size: 12px;
+    font-family: var(--sans); cursor: pointer;
+  }
+
+  /* ── SECTION BASE ── */
+  section { padding: 100px 48px; }
+  .section-tag {
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: clamp(32px, 3.5vw, 52px);
+    font-weight: 300; line-height: 1.15;
+    margin-bottom: 20px;
+  }
+  .section-sub {
+    font-size: 15px; color: var(--ink2); line-height: 1.7;
+    max-width: 560px; margin-bottom: 48px;
+  }
+
+  /* ── WHY SECTION ── */
+  .why-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2px; border: 0.5px solid var(--border);
+  }
+  .why-card {
+    padding: 40px 32px;
+    border: 0.5px solid var(--border);
+    background: var(--cream);
+    transition: background 0.2s;
+  }
+  .why-card:hover { background: var(--sand); }
+  .why-icon {
+    width: 40px; height: 40px;
+    border: 0.5px solid var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+  .why-icon svg { width: 18px; height: 18px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
+  .why-title {
+    font-family: var(--serif);
+    font-size: 20px; font-weight: 400;
+    margin-bottom: 10px;
+  }
+  .why-desc { font-size: 13px; color: var(--ink2); line-height: 1.7; }
+
+  /* ── HOW IT WORKS ── */
+  .how-section { background: var(--sand); }
+  .steps-list { display: flex; flex-direction: column; gap: 0; max-width: 700px; }
+  .step-item {
+    display: flex; gap: 32px; padding: 36px 0;
+    border-bottom: 0.5px solid var(--border);
+    align-items: flex-start;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-num {
+    font-family: var(--serif);
+    font-size: 48px; font-weight: 300;
+    color: var(--gold-light); line-height: 1;
+    min-width: 60px; flex-shrink: 0;
+  }
+  .step-content h3 {
+    font-family: var(--serif);
+    font-size: 22px; font-weight: 400;
+    margin-bottom: 8px;
+  }
+  .step-content p { font-size: 14px; color: var(--ink2); line-height: 1.7; }
+  .step-content code {
+    font-size: 12px; background: var(--cream);
+    border: 0.5px solid var(--border);
+    padding: 2px 7px; border-radius: 4px;
+    font-family: monospace; color: var(--ink);
+  }
+
+  /* ── PRICING ── */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+  .price-card {
+    border: 0.5px solid var(--border);
+    padding: 40px 32px;
+    background: var(--cream);
+    border-radius: 2px;
+    position: relative;
+  }
+  .price-card.featured {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  .price-tag {
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
+  }
+  .price-card.featured .price-tag { color: var(--gold); }
+  .price-name {
+    font-family: var(--serif); font-size: 28px; font-weight: 300;
+    margin-bottom: 8px;
+  }
+  .price-amount {
+    font-family: var(--serif); font-size: 42px; font-weight: 300;
+    margin-bottom: 4px;
+  }
+  .price-amount span { font-size: 16px; color: var(--ink2); }
+  .price-card.featured .price-amount span { color: rgba(250,248,244,0.6); }
+  .price-period { font-size: 12px; color: var(--ink2); margin-bottom: 32px; }
+  .price-card.featured .price-period { color: rgba(250,248,244,0.6); }
+  .price-features { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .price-features li { font-size: 13px; display: flex; gap: 10px; align-items: flex-start; }
+  .price-features li::before { content: '—'; color: var(--gold); flex-shrink: 0; }
+  .price-card.featured .price-features li { color: rgba(250,248,244,0.85); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink); color: rgba(250,248,244,0.7);
+    padding: 60px 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 24px;
+  }
+  .footer-logo { font-family: var(--serif); font-size: 20px; color: var(--cream); }
+  .footer-logo span { color: var(--gold); }
+  .footer-contact { font-size: 13px; line-height: 1.8; }
+  .footer-contact a { color: var(--gold); text-decoration: none; }
+
+  /* ── CHATBOT WIDGET ── */
+  #bot-bubble {
+    position: fixed; bottom: 28px; right: 28px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--ink); cursor: pointer; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--gold);
+    transition: transform 0.2s;
+  }
+  #bot-bubble:hover { transform: scale(1.05); }
+  #bot-bubble svg { width: 24px; height: 24px; fill: var(--cream); }
+  #bot-win {
+    position: fixed; bottom: 96px; right: 28px;
+    width: 340px; background: #fff;
+    border-radius: 16px; border: 0.5px solid #D3D1C7;
+    z-index: 9998; display: none; flex-direction: column;
+    font-family: var(--sans); overflow: hidden;
+    box-shadow: 0 20px 60px rgba(26,24,20,0.15);
+  }
+  #bot-head {
+    background: var(--ink); padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .bot-head-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500; color: #fff;
+  }
+  #bot-head-name { color: #f5f2ec; font-size: 13px; font-weight: 500; letter-spacing: 0.06em; }
+  #bot-head-status { color: #9FE1CB; font-size: 10px; }
+  #bot-msgs {
+    flex: 1; overflow-y: auto; padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+    background: #f9f8f6; max-height: 360px;
+  }
+  .bm-bot {
+    background: #fff; border: 0.5px solid #e0ddd7;
+    padding: 10px 12px; border-radius: 12px 12px 12px 3px;
+    font-size: 13px; line-height: 1.55; color: var(--ink);
+    max-width: 85%; word-break: break-word;
+  }
+  .bm-user {
+    background: var(--ink); color: #f5f2ec;
+    padding: 10px 12px; border-radius: 12px 12px 3px 12px;
+    font-size: 13px; max-width: 85%; align-self: flex-end;
+    word-break: break-word;
+  }
+  .bm-link { color: var(--gold); font-size: 12px; }
+  #bot-foot {
+    padding: 10px; border-top: 0.5px solid #e0ddd7;
+    display: flex; gap: 8px; background: #fff;
+  }
+  #bot-inp {
+    flex: 1; border: 0.5px solid #D3D1C7; border-radius: 20px;
+    padding: 8px 12px; font-size: 13px; outline: none;
+    font-family: var(--sans); background: #f5f2ec;
+  }
+  #bot-send {
+    background: var(--ink); color: #f5f2ec; border: none;
+    border-radius: 20px; padding: 8px 16px; cursor: pointer;
+    font-size: 13px; font-family: var(--sans);
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #888; display: inline-block; animation: blink 1.2s infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── DEMO NOTE ── */
+  .demo-note {
+    background: var(--sand); border: 0.5px solid var(--gold);
+    border-radius: 2px; padding: 16px 24px;
+    font-size: 13px; color: var(--ink2); margin-bottom: 40px;
+    display: flex; gap: 12px; align-items: flex-start; max-width: 600px;
+  }
+  .demo-note-icon { color: var(--gold); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; gap: 48px; }
+    .hero-visual { order: -1; }
+    .phone-device { width: 240px; }
+    section { padding: 60px 24px; }
+    footer { padding: 40px 24px; flex-direction: column; align-items: flex-start; }
+    #bot-win { width: calc(100vw - 40px); right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Shivam<span>.</span>AI</a>
+  <div class="nav-links">
+    <a href="#why">Why a chatbot</a>
+    <a href="#demo">Live demo</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-text">
+    <div class="hero-tag">Custom AI Chatbot — Built for YERSE</div>
+    <h1 class="hero-title">Your customers deserve <em>instant</em> answers.</h1>
+    <p class="hero-sub">
+      This is a live demo of the AI chatbot I've built specifically for YERSE — 
+      branded to match your aesthetic, trained on your collections and pages, 
+      and ready to deploy in under 24 hours.
+    </p>
+    <div class="btn-row">
+      <a href="#demo" class="btn-primary">Try the live demo</a>
+      <a href="#contact" class="btn-outline">Get in touch</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="phone-wrap">
+      <div class="phone-device">
+        <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+        <div class="phone-screen">
+          <div class="phone-chat-header">
+            <div class="phone-avatar">Y</div>
+            <div>
+              <div class="phone-chat-name">YERSE</div>
+              <div class="phone-chat-status">● Online</div>
+            </div>
+          </div>
+          <div class="phone-msgs" id="heroMsgs">
+            <div class="p-msg-bot">Welcome to YERSE! I'm here to help you find the perfect piece from our collection. What are you looking for today?</div>
+            <div class="p-msg-user">Do you have linen dresses?</div>
+            <div class="p-msg-bot">Yes! We have a beautiful linen collection this season. You can browse it here:<br><a class="p-link" href="https://www.yerse.com/linen-collection-women" target="_blank">yerse.com/linen-collection-women</a><br><br>And our full dresses range is at:<br><a class="p-link" href="https://www.yerse.com/dresses-new-collection-women" target="_blank">yerse.com/dresses-new-collection-women</a></div>
+          </div>
+          <div class="phone-input-row">
+            <input class="phone-inp" placeholder="Ask anything..." readonly/>
+            <button class="phone-send-btn">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="why">
+  <div class="reveal">
+    <div class="section-tag">The opportunity</div>
+    <h2 class="section-title">What a chatbot does<br>for your brand</h2>
+    <p class="section-sub">Customers who get instant answers buy more. Those who don't, leave. It's that simple.</p>
+  </div>
+  <div class="why-grid reveal">
+    <div class="why-card">
+      <div class="why-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+      </div>
+      <div class="why-title">24 / 7 availability</div>
+      <div class="why-desc">The bot answers at 2am on a Sunday. No support team needed. No delay. Every question gets a response.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="why-title">Page navigation</div>
+      <div class="why-desc">Ask for "linen skirts" and get a direct link. No hunting through menus. Customers land exactly where they want.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+      </div>
+      <div class="why-title">Multilingual</div>
+      <div class="why-desc">Automatically detects and replies in French, German, Spanish, Italian — matching your European customer base.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+      </div>
+      <div class="why-title">Higher conversion</div>
+      <div class="why-desc">Brands with chat assistants see 15–30% more time on site and fewer abandoned carts. Answers = confidence = purchases.</div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo" style="background: var(--sand);">
+  <div class="reveal">
+    <div class="section-tag">Live demo</div>
+    <h2 class="section-title">Try the YERSE chatbot<br>right now</h2>
+    <p class="section-sub">This is the actual bot — not a recording. Ask it anything about YERSE's collections, products, or pages.</p>
+  </div>
+  <div class="demo-note reveal">
+    <div class="demo-note-icon">★</div>
+    <div>This chatbot was built specifically for YERSE — trained on your collections, pages, brand philosophy, and European shipping. It responds in the customer's language automatically.</div>
+  </div>
+  <div style="max-width: 520px; background: #fff; border-radius: 16px; border: 0.5px solid #D3D1C7; overflow: hidden; box-shadow: 12px 12px 0 var(--gold-light);" class="reveal">
+    <div style="background: var(--ink); padding: 14px 18px; display: flex; align-items: center; gap: 12px;">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; font-weight: 500;">Y</div>
+      <div>
+        <div style="color: #f5f2ec; font-size: 14px; font-weight: 500; letter-spacing: 0.08em;">YERSE</div>
+        <div style="color: #9FE1CB; font-size: 11px;">● Online — Demo by Shivam</div>
+      </div>
+    </div>
+    <div id="demoMsgs" style="padding: 16px; min-height: 300px; max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9f8f6;">
+      <div class="bm-bot">Welcome to YERSE! I'm here to help you find the perfect piece from our collection. What are you looking for today?</div>
+    </div>
+    <div style="padding: 12px; border-top: 0.5px solid #e0ddd7; display: flex; gap: 8px; background: #fff;">
+      <input id="demoInp" style="flex:1; border: 0.5px solid #D3D1C7; border-radius: 20px; padding: 9px 14px; font-size: 13px; outline: none; font-family: var(--sans); background: #f5f2ec;" placeholder="Ask about collections, shipping, stores..." onkeydown="if(event.key==='Enter')demoSend()"/>
+      <button onclick="demoSend()" style="background: var(--ink); color: #f5f2ec; border: none; border-radius: 20px; padding: 9px 18px; cursor: pointer; font-size: 13px; font-family: var(--sans);">Send</button>
+    </div>
+  </div>
+  <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;" class="reveal">
+    <span style="font-size: 12px; color: var(--ink2); margin-right: 4px;">Try:</span>
+    <button onclick="qa('Where can I find dresses?')" style="font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--border); background: #fff; cursor: pointer; font-family: var(--sans); color: var(--ink);">Where are the dresses?</button>
+    <button onclick="qa('Do you have linen clothing?')" style="font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--border); background: #fff; cursor: pointer; font-family: var(--sans); color: var(--ink);">Linen clothing?</button>
+    <button onclick="qa('Where are your stores?')" style="font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--border); background: #fff; cursor: pointer; font-family: var(--sans); color: var(--ink);">Store locations?</button>
+    <button onclick="qa('¿Tenéis vestidos de lino?')" style="font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--border); background: #fff; cursor: pointer; font-family: var(--sans); color: var(--ink);">En español</button>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="how-section">
+  <div class="reveal">
+    <div class="section-tag">The process</div>
+    <h2 class="section-title">From agreement<br>to live — in 24 hours</h2>
+  </div>
+  <div class="steps-list reveal">
+    <div class="step-item">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>We agree on scope</h3>
+        <p>One call or email exchange. I confirm your platform (WordPress, Shopify, custom HTML, etc.), colors, and any specific needs like languages or product categories.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>I build and customize</h3>
+        <p>I train the bot on your website — all your pages, products, brand voice, and navigation. I match your brand colors exactly. You get a demo link to review before anything goes live.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>Integration — one snippet</h3>
+        <p>I paste one <code>&lt;script&gt;</code> tag into your website. For WordPress: I use a plugin, no developer needed. For Shopify: I edit the theme file. For GTM: I create a tag — takes 5 minutes.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>Live & maintained</h3>
+        <p>Your chatbot goes live. Every month I update it when you add new collections or pages. You pay a small monthly fee — or a one-time setup if you prefer to manage it yourself.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="reveal">
+    <div class="section-tag">Investment</div>
+    <h2 class="section-title">Simple, transparent pricing</h2>
+    <p class="section-sub">No hidden costs. The AI usage (API) costs are passed on at exact cost — I don't mark them up.</p>
+  </div>
+  <div class="pricing-grid reveal">
+    <div class="price-card">
+      <div class="price-tag">One-time</div>
+      <div class="price-name">Setup</div>
+      <div class="price-amount">€149<span> one-time</span></div>
+      <div class="price-period">Fully custom chatbot, integrated and live</div>
+      <ul class="price-features">
+        <li>Brand-matched design</li>
+        <li>Full page navigation</li>
+        <li>Multilingual support</li>
+        <li>1 month of support included</li>
+        <li>You manage it after that</li>
+      </ul>
+    </div>
+    <div class="price-card featured">
+      <div class="price-tag">Most popular</div>
+      <div class="price-name">Setup + Care</div>
+      <div class="price-amount">€149<span> + €29/mo</span></div>
+      <div class="price-period">Setup fee + monthly maintenance</div>
+      <ul class="price-features">
+        <li>Everything in Setup</li>
+        <li>Monthly updates as collections change</li>
+        <li>Performance monitoring</li>
+        <li>Priority support via email</li>
+        <li>API costs covered up to 5,000 messages/mo</li>
+      </ul>
+    </div>
+    <div class="price-card">
+      <div class="price-tag">Enterprise</div>
+      <div class="price-name">Custom</div>
+      <div class="price-amount">Let's<span> talk</span></div>
+      <div class="price-period">For larger brands or multiple sites</div>
+      <ul class="price-features">
+        <li>Multiple language sites</li>
+        <li>CRM or email integration</li>
+        <li>Lead capture flows</li>
+        <li>Analytics dashboard</li>
+        <li>Dedicated backend server</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" style="background: var(--sand);">
+  <div class="reveal">
+    <div class="section-tag">Get in touch</div>
+    <h2 class="section-title">Ready to give your<br>customers instant answers?</h2>
+    <p class="section-sub">Send me a message and I'll respond within 24 hours. No pressure, no commitment — just a conversation.</p>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 16px; max-width: 480px;" class="reveal">
+    <div style="background: var(--cream); border: 0.5px solid var(--border); padding: 28px 32px; border-radius: 2px;">
+      <div style="font-family: var(--serif); font-size: 22px; font-weight: 400; margin-bottom: 20px;">Shivam</div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: var(--ink2);">
+        <div>📧 <a href="mailto:your@email.com" style="color: var(--gold);">your@email.com</a></div>
+        <div>💬 Available via WhatsApp & email</div>
+        <div>🌍 Working with brands across Europe & India</div>
+        <div>⚡ Typical response time: under 4 hours</div>
+      </div>
+    </div>
+    <a href="mailto:your@email.com" class="btn-primary" style="text-align: center;">Send me an email</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">Shivam<span>.</span>AI</div>
+    <div style="font-size: 12px; margin-top: 8px; color: rgba(250,248,244,0.4);">AI chatbot integration for fashion & lifestyle brands</div>
+  </div>
+  <div class="footer-contact">
+    Built for <a href="https://www.yerse.com/en" target="_blank">YERSE</a> as a live demo.<br>
+    All rights to YERSE brand belong to YERSE S.A.
+  </div>
+</footer>
+
+<!-- FLOATING CHATBOT -->
+<div id="bot-bubble" onclick="botToggle()">
+  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+</div>
+<div id="bot-win">
+  <div id="bot-head">
+    <div class="bot-head-avatar">Y</div>
+    <div>
+      <div id="bot-head-name">YERSE</div>
+      <div id="bot-head-status">● Online — Demo</div>
+    </div>
+  </div>
+  <div id="bot-msgs">
+    <div class="bm-bot">Welcome to YERSE! I'm here to help you find the perfect piece from our collection. What are you looking for today?</div>
+  </div>
+  <div id="bot-foot">
+    <input id="bot-inp" placeholder="Ask about our collection..." onkeydown="if(event.key==='Enter')botSend()"/>
+    <button id="bot-send" onclick="botSend()">Send</button>
+  </div>
+</div>
+
+<script>
+const SYS = `You are a helpful shopping assistant for YERSE, a Spanish women's fashion brand known for elegant, sustainable clothing. Your tone is warm, stylish, and concise.
+
+ABOUT YERSE:
+- Women's fashion brand from Spain with a "Slow Yerse" sustainable philosophy
+- Free shipping on orders over €120
+- Ships to 30+ European countries
+
+PAGES AND LINKS — always include the direct link when directing users:
+- New In: https://www.yerse.com/new-in-en
+- Jackets & Blazers: https://www.yerse.com/women-jackets-blazers-new-collection
+- Sweaters & Cardigans: https://www.yerse.com/women-knitwear-cardigans-new-collection
+- Trousers & Jeans: https://www.yerse.com/women-trousers-jeans-new-in
+- Dresses & Jumpsuits: https://www.yerse.com/dresses-new-collection-women
+- Shirts & Blouses: https://www.yerse.com/women-shirts-blouses-new-collection
+- T-shirts & Tops: https://www.yerse.com/women-tshirts-tops-new-collection
+- Vests: https://www.yerse.com/womens-summer-vests
+- Skirts: https://www.yerse.com/women-skirts-new-collection
+- Linen Collection: https://www.yerse.com/linen-collection-women
+- All Collection: https://www.yerse.com/view-all-yerse-collection-woman
+- Bags: https://www.yerse.com/womens-bags
+- Scarves & Wraps: https://www.yerse.com/scarves-women
+- Belts: https://www.yerse.com/womens-belts
+- Hats & Caps: https://www.yerse.com/beanies-hats
+- Jewelry: https://www.yerse.com/jewelry–necklaces–bracelets–earrings
+- All Accessories: https://www.yerse.com/view-all-accessories-yerse
+- Shoes: https://www.yerse.com/women-shoes-yerse
+- Beachwear: https://www.yerse.com/beachwear-collection-ss26
+- Stores & Locations: https://www.yerse.com/yerse-concept-stores
+- Slow Yerse (sustainability): https://www.yerse.com/slowyerse-philosophy
+- Contact/Help: https://www.yerse.com/contact-us
+
+RULES:
+- Always provide the direct link when mentioning a category or page
+- Keep replies to 2-3 sentences max
+- If unsure, direct to https://www.yerse.com/contact-us
+- Detect language from user and reply in same language`;
+
+let botOpen = false, botTyping = false, botHistory = [];
+let demoTyping = false, demoHistory = [];
+
+function fmt(t){return t.replace(/(https?:\/\/[^\s]+)/g,'<a class="bm-link" href="$1" target="_blank">$1</a>');}
+
+function addTo(containerId, text, cls, isTyping){
+  const c = document.getElementById(containerId);
+  const el = document.createElement('div');
+  if(isTyping){
+    el.className = 'bm-bot';
+    el.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  } else {
+    el.className = cls;
+    el.innerHTML = fmt(text);
+  }
+  c.appendChild(el);
+  c.scrollTop = c.scrollHeight;
+  return el;
+}
+
+async function callAPI(history, typing){
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,system:SYS,messages:history})
+    });
+    const d = await r.json();
+    return d.content[0].text;
+  } catch(e){ return null; }
+}
+
+async function demoSend(){
+  if(demoTyping) return;
+  const inp = document.getElementById('demoInp');
+  const t = inp.value.trim(); if(!t) return;
+  inp.value = '';
+  addTo('demoMsgs', t, 'bm-user');
+  demoHistory.push({role:'user',content:t});
+  demoTyping = true;
+  const el = addTo('demoMsgs','','',true);
+  const reply = await callAPI(demoHistory, el);
+  if(reply){ demoHistory.push({role:'assistant',content:reply}); el.innerHTML = fmt(reply); }
+  else { el.textContent = 'Something went wrong. Please try again.'; }
+  demoTyping = false;
+}
+function qa(q){ document.getElementById('demoInp').value=q; demoSend(); }
+
+function botToggle(){ botOpen=!botOpen; document.getElementById('bot-win').style.display=botOpen?'flex':'none'; if(botOpen)document.getElementById('bot-inp').focus(); }
+
+async function botSend(){
+  if(botTyping) return;
+  const inp = document.getElementById('bot-inp');
+  const t = inp.value.trim(); if(!t) return;
+  inp.value='';
+  addTo('bot-msgs',t,'bm-user');
+  botHistory.push({role:'user',content:t});
+  botTyping=true;
+  const el = addTo('bot-msgs','','',true);
+  const reply = await callAPI(botHistory,el);
+  if(reply){ botHistory.push({role:'assistant',content:reply}); el.innerHTML=fmt(reply); }
+  else { el.textContent='Something went wrong. Please try again.'; }
+  botTyping=false;
+}
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
