@@ -708,6 +708,142 @@ RULES:
 
 let botOpen = false, botTyping = false, botHistory = [];
 let demoTyping = false, demoHistory = [];
+const GOOGLE_API_KEY = 'AIzaSyAe2PfcwaQjKVTxOfcAx7KWgK-qnWsPMSk'; // Paste your Google AI API key here.
+const GOOGLE_MODEL = 'gemini-1.5-flash';
+
+const PAGE_LINKS = {
+  linen: 'https://www.yerse.com/linen-collection-women',
+  dresses: 'https://www.yerse.com/dresses-new-collection-women',
+  shirts: 'https://www.yerse.com/women-shirts-blouses-new-collection',
+  sweaters: 'https://www.yerse.com/women-knitwear-cardigans-new-collection',
+  jackets: 'https://www.yerse.com/women-jackets-blazers-new-collection',
+  trousers: 'https://www.yerse.com/women-trousers-jeans-new-in',
+  skirts: 'https://www.yerse.com/women-skirts-new-collection',
+  shoes: 'https://www.yerse.com/women-shoes-yerse',
+  bags: 'https://www.yerse.com/womens-bags',
+  stores: 'https://www.yerse.com/yerse-concept-stores',
+  slowYerse: 'https://www.yerse.com/slowyerse-philosophy',
+  shipping: 'https://www.yerse.com/contact-us',
+  contact: 'https://www.yerse.com/contact-us',
+  newIn: 'https://www.yerse.com/new-in-en',
+  all: 'https://www.yerse.com/view-all-yerse-collection-woman'
+};
+
+function localAssistantReply(userText){
+  const q = userText.toLowerCase();
+  const hasAny = (...words) => words.some(w => q.includes(w));
+  const msg = (text, url) => `${text}\n${url}`;
+
+  if(hasAny('linen shirt', 'linen shirts')){
+    return msg(
+      `Great choice — linen shirts are a signature YERSE style this season. You can explore the linen section here, and if you want, I can also suggest matching trousers or skirts for a full look:`,
+      PAGE_LINKS.linen
+    );
+  }
+
+  if(hasAny('linen', 'lino')){
+    return msg(
+      `Absolutely — YERSE has a beautiful linen collection with breathable, elegant pieces. You can browse it directly here:`,
+      PAGE_LINKS.linen
+    );
+  }
+
+  if(hasAny('dress', 'dresses', 'vestido', 'vestidos', 'jumpsuit')){
+    return msg(
+      `You can find YERSE dresses and jumpsuits here. It includes the latest seasonal styles:`,
+      PAGE_LINKS.dresses
+    );
+  }
+
+  if(hasAny('shirt', 'shirts', 'blouse', 'blouses')){
+    return msg(
+      `You can browse shirts and blouses directly on this page:`,
+      PAGE_LINKS.shirts
+    );
+  }
+
+  if(hasAny('sweater', 'sweaters', 'cardigan', 'knitwear', 'jersey')){
+    return msg(
+      `For sweaters and cardigans, this is the best section to start with:`,
+      PAGE_LINKS.sweaters
+    );
+  }
+
+  if(hasAny('jacket', 'jackets', 'blazer', 'blazers')){
+    return msg(
+      `You can find jackets and blazers here:`,
+      PAGE_LINKS.jackets
+    );
+  }
+
+  if(hasAny('trouser', 'trousers', 'jeans', 'pant', 'pants')){
+    return msg(
+      `You can explore trousers and jeans from YERSE here:`,
+      PAGE_LINKS.trousers
+    );
+  }
+
+  if(hasAny('skirt', 'skirts')){
+    return msg(
+      `Here is the direct link for YERSE skirts:`,
+      PAGE_LINKS.skirts
+    );
+  }
+
+  if(hasAny('shoe', 'shoes', 'footwear')){
+    return msg(
+      `You can check YERSE shoes here:`,
+      PAGE_LINKS.shoes
+    );
+  }
+
+  if(hasAny('bag', 'bags')){
+    return msg(
+      `You can browse YERSE bags on this page:`,
+      PAGE_LINKS.bags
+    );
+  }
+
+  if(hasAny('store', 'stores', 'location', 'shop near', 'offline shop')){
+    return msg(
+      `You can view YERSE concept stores and locations here:`,
+      PAGE_LINKS.stores
+    );
+  }
+
+  if(hasAny('sustain', 'slow yerse', 'eco', 'ethical')){
+    return msg(
+      `If you want to learn about YERSE's sustainability philosophy, this page explains Slow Yerse clearly:`,
+      PAGE_LINKS.slowYerse
+    );
+  }
+
+  if(hasAny('shipping', 'delivery', 'ship', 'returns', 'return policy')){
+    return msg(
+      `For shipping and support details, please use YERSE help/contact page here:`,
+      PAGE_LINKS.shipping
+    );
+  }
+
+  if(hasAny('new in', 'latest', 'new collection')){
+    return msg(
+      `You can explore the latest arrivals here:`,
+      PAGE_LINKS.newIn
+    );
+  }
+
+  if(hasAny('all collection', 'all products', 'everything')){
+    return msg(
+      `You can browse the full YERSE women collection here:`,
+      PAGE_LINKS.all
+    );
+  }
+
+  return msg(
+    `I'd love to help you find the right section. You can start from the full collection page below, or ask me for a specific category like linen, dresses, shirts, stores, or bags:`,
+    PAGE_LINKS.all
+  );
+}
 
 function fmt(t){return t.replace(/(https?:\/\/[^\s]+)/g,'<a class="bm-link" href="$1" target="_blank">$1</a>');}
 
@@ -727,15 +863,38 @@ function addTo(containerId, text, cls, isTyping){
 }
 
 async function callAPI(history, typing){
+  const lastUserMessage = history.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
+  if(!GOOGLE_API_KEY){
+    return localAssistantReply(lastUserMessage);
+  }
+
   try {
-    const r = await fetch('https://api.anthropic.com/v1/messages',{
+    const googleContents = history.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GOOGLE_MODEL}:generateContent?key=${encodeURIComponent(GOOGLE_API_KEY)}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,system:SYS,messages:history})
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYS }] },
+        contents: googleContents,
+        generationConfig: {
+          maxOutputTokens: 300,
+          temperature: 0.6
+        }
+      })
     });
+    if(!r.ok) throw new Error('API request failed');
     const d = await r.json();
-    return d.content[0].text;
-  } catch(e){ return null; }
+    const text = d?.candidates?.[0]?.content?.parts?.[0]?.text;
+    return text || localAssistantReply(lastUserMessage);
+  } catch(e){
+    return localAssistantReply(lastUserMessage);
+  }
 }
 
 async function demoSend(){
