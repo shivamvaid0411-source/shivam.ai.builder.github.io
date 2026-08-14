@@ -1,1 +1,1 @@
-Demo Ai Chatbot 1
+Hi everyone! I have created this demo site, which includes an AI chatbot integration. The original site of this particular brand did not have this facility of an AI chatbot. I went through their site, found this con, and made them a demo for their growth in the business. I pitched them with this site. We had a nice talk, but our budget did not align very well, so we needed to drop the implementation of this project. It is here for the showcase
